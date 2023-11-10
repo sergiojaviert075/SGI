@@ -1,12 +1,9 @@
 {% extends "app_base_panel.html" %}
 {% load static %}
-{% block head %}
-{% endblock %}
 {% block content %}
     <div class="col-md-12" style="width: 100%">
         <form id="id_formulario_generico" class="save-modal-form-generic" autocomplete="off" method="POST"
-              enctype="multipart/form-data">
-            {% csrf_token %}
+              enctype="multipart/form-data" action="{{ request.path }}">
             <div class="card mb-3">
                 <div class="card-body ">
 
@@ -15,8 +12,12 @@
                         {% endblock %}
                     </div>
                     <div class="modal-footer justify">
-                        <a href="{% url cancelar %}" style="display: inline-block;height: 2.5rem;padding: 0 1.9rem;color: white;text-align: center;font-size: 0.7rem;font-weight: 600;line-height: 2.5rem;letter-spacing: 0.1rem;text-transform: uppercase;text-decoration: none;white-space: nowrap;background: #d33;border-radius: 4px;border: 1px solid #BBB;cursor: pointer;-webkit-transition: border 0.2s;transition: border 0.2s;" class="btn btn-primary">Cancelar</a>
-                        <button style="background: #0f6674; color: white" type="submit" class="btn btn-primary">Guardar</button>
+                        <a href="{% url cancelar %}"
+                           style="display: inline-block;height: 2.5rem;padding: 0 1.9rem;color: white;text-align: center;font-size: 0.7rem;font-weight: 600;line-height: 2.5rem;letter-spacing: 0.1rem;text-transform: uppercase;text-decoration: none;white-space: nowrap;background: #d33;border-radius: 4px;border: 1px solid #BBB;cursor: pointer;-webkit-transition: border 0.2s;transition: border 0.2s;"
+                           class="btn btn-primary">Cancelar</a>
+                        <button style="background: #0f6674; color: white" type="submit" class="btn btn-primary">
+                            Guardar
+                        </button>
                     </div>
 
                 </div>
@@ -25,10 +26,8 @@
     </div>
 
 {% endblock %}
-{% block javascript %}
+{% block estilos_add %}
     <script>
-
-        $("#id_formulario_generico").attr('action', '/administrativo/editar_organizacion/');
 
         function toast_error(text) {
             $.toast({
@@ -39,24 +38,47 @@
         }
 
         $(document).ready(function () {
-            $(".enviar-datos-form").submit(async function (e) {
+            $(".save-modal-form-generic").submit(async function (e) {
                 e.preventDefault();  // Evita el envío del formulario por defecto
                 // Encuentra el modal padre del formulario actual
-                const $modal = $(this).closest('.modal');
                 // Realiza la solicitud AJAX y maneja la Promesa
                 const url = $(this).attr("action")
                 const formData = new FormData(this);
                 try {
                     const response = await SendPostRequest(url, formData, true);
                     if (response.success) {
-                        location.reload();
+                        if (response.url) {
+                            mensaje_satisfaccion(response.message, response.url)
+                        }else {
+                            mensaje_satisfaccion(response.message)
+                        }
                     } else {
-                        toast_error(response.errors);
+                        toast_error(response.message);
                     }
                 } catch (error) {
                     toast_error("Error en la solicitud AJAX.");
                 }
             });
         });
+    </script>
+    <script>
+        $(document).ready(function () {
+            // Obtén una referencia al formulario
+            const form = document.getElementById("id_formulario_generico");
+
+// Obtén una lista de todos los elementos de entrada (input) dentro del formulario
+            const inputElements = form.querySelectorAll("input");
+
+// Itera a través de los elementos de entrada
+            inputElements.forEach(function (input) {
+                // Verifica si el campo tiene el atributo "required" y su valor es "false"
+                if (input.getAttribute("norequired") === "True") {
+                    // Elimina el atributo "required"
+                    input.removeAttribute("required");
+                }
+            });
+
+        })
+
     </script>
 {% endblock %}

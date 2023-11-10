@@ -1,110 +1,284 @@
 {% extends "app_base_panel.html" %}
+{% block estilos_add %}
+    <script>
+
+        var countAdmin = 0;
+        var countIncidencias = 0;
+        var countPersona = 0;
+        var countModulos = 0;
+
+        function ejecutar() {
+            var totalPromises = [];
+
+            function makeAjaxRequest(url, targetElement) {
+                return new Promise(function (resolve, reject) {
+                    $.ajax({
+                        url: url,
+                        type: "POST",
+                        data: {
+                            csrfmiddlewaretoken: '{{ csrf_token }}',
+                        },
+                        success: function (data) {
+                            if (data.success) {
+                                var total = parseInt(data.total);
+                                var contador = 0;
+
+                                function incrementCounter() {
+                                    targetElement.textContent = contador;
+                                    contador++;
+
+                                    if (contador <= total) {
+                                        var delay = 500;
+                                        if (total <= 10) {
+                                            delay = 500
+                                        }
+
+                                        if (total > 10 && total <= 20) {
+                                            delay = 100
+                                        }
+
+                                        if (total > 20) {
+                                            delay = 5
+                                        }
+
+                                        setTimeout(incrementCounter, delay);
+                                    } else {
+                                        resolve();
+                                    }
+                                }
+
+                                incrementCounter();
+                            } else {
+                                targetElement.textContent = "0";
+                                resolve();
+                            }
+                        },
+                        error: function () {
+                            reject("Error en la solicitud AJAX.");
+                        }
+                    });
+                });
+            }
+
+            totalPromises.push(makeAjaxRequest("{% url 'administrativo:consultaPersonas' %}", document.getElementById('countPersonas')));
+            totalPromises.push(makeAjaxRequest("{% url 'administrativo:consultaModulos' %}", document.getElementById('countModulos')));
+            totalPromises.push(makeAjaxRequest("{% url 'administrativo:consultaIncidencias' %}", document.getElementById('countIncidencias')));
+            totalPromises.push(makeAjaxRequest("{% url 'administrativo:consultaAdministrativos' %}", document.getElementById('countAdmin')));
+
+            Promise.all(totalPromises)
+                .then(function () {
+                    // Todas las solicitudes AJAX se han completado
+                    // Puedes agregar cualquier otra lógica que necesites aquí
+                })
+                .catch(function (error) {
+                    console.error(error);
+                    alert("Ocurrió un error en alguna de las solicitudes AJAX.");
+                });
+        }
+
+
+        window.onload = function () {
+            ejecutar();
+        }
+
+        function consultaAdministrativos() {
+            if (parseInt(countAdmin) == 1) {
+                $.ajax({
+                    url: "{% url 'administrativo:consultaAdministrativos' %}",
+                    type: "POST",
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                    },
+                    success: function (data) {
+                        if (data.success) {
+                            document.getElementById('countAdmin').textContent = data.total;
+                        } else {
+                            document.getElementById('countAdmin').textContent = "0";
+                        }
+                    },
+                    error: function () {
+                        toast_error("Error en la solicitud AJAX.");
+                    }
+                });
+            }
+        }
+
+        function consultaIncidencias() {
+            if (parseInt(countIncidencias) == 1) {
+                $.ajax({
+                    url: "{% url 'administrativo:consultaIncidencias' %}",
+                    type: "POST",
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                    },
+                    success: function (data) {
+                        if (data.success) {
+                            document.getElementById('countEmpleados').textContent = data.total;
+                        } else {
+                            document.getElementById('countEmpleados').textContent = "0";
+                        }
+                    },
+                    error: function () {
+                        toast_error("Error en la solicitud AJAX.");
+                    }
+                });
+            }
+        }
+
+        function consultaPersonas() {
+            var total = 0
+            if (parseInt(countPersona) == 1) {
+                $.ajax({
+                    url: "{% url 'administrativo:consultaPersonas' %}",
+                    type: "POST",
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                    },
+                    success: function (data) {
+                        if (data.success) {
+                            document.getElementById('countPersonas').textContent = data.total;
+                        } else {
+                            document.getElementById('countPersonas').textContent = "0";
+                        }
+                    },
+                    error: function () {
+                        toast_error("Error en la solicitud AJAX.");
+                    }
+                });
+            }
+        }
+
+        function consultaModulos() {
+            var total = 0
+            if (parseInt(countModulos) == 1) {
+                $.ajax({
+                    url: "{% url 'administrativo:consultaModulos' %}",
+                    type: "POST",
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                    },
+                    success: function (data) {
+                        if (data.success) {
+                            document.getElementById('countModulos').textContent = data.total;
+                        } else {
+                            document.getElementById('countModulos').textContent = "0";
+                        }
+                    },
+                    error: function () {
+                        toast_error("Error en la solicitud AJAX.");
+                    }
+                });
+            }
+        }
+
+        // Llama a la función cada segundo (1000 milisegundos)
+        setInterval(consultaAdministrativos, 500);
+        setInterval(consultaIncidencias, 500);
+        setInterval(consultaPersonas, 500);
+        setInterval(consultaModulos, 500);
+    </script>
+{% endblock %}
 {% block content %}
-   {% if is_administrativo %}
-  <div class="container">
-    {% if empleados_sin_jornadas %}
-      <div class="notification warning">
+    {% if is_administrativo %}
+        <div class="container">
+            {% if empleados_sin_jornadas %}
+                <div class="notification warning">
         <span class="icon">
           <i class="bi bi-exclamation-triangle-fill"></i>
         </span>
-        <strong>Empleados existentes sin jornadas laborales asignadas</strong>
-      </div>
+                    <strong>Empleados existentes sin jornadas laborales asignadas</strong>
+                </div>
+            {% endif %}
+        </div>
+
+        <section class="container">
+            <div class="row">
+                <div class="three columns">
+                    <div class="card">
+                        <div class="card-content">
+                            <h3 id="countPersonas">-----</h3>
+                            <p>Personas</p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{% url 'administrativo:listar_personas' %}">Ver información</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="three columns">
+                    <div class="card">
+                        <div class="card-content">
+                            <h3 id="countModulos">-----</h3>
+                            <p>Módulos</p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="#">Ver información</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="three columns">
+                    <div class="card">
+                        <div class="card-content">
+                            <h3 id="countAdmin">-----</h3>
+                            <p>Administrativo</p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{% url 'administrativo:listar_personas' %}">Ver información</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="three columns">
+                    <div class="card">
+                        <div class="card-content">
+                            <h3 id="countIncidencias">-----</h3>
+                            <p>Incidencias</p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{% url 'administrativo:listar_incidencias' %}">Ver información</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="container">
+            <h4>Últimas 5 incidencias registradas</h4>
+            <table class="u-full-width">
+                <thead>
+                <tr>
+                    <th style="width: 20%">Persona</th>
+                    <th style="width: 20%">Título</th>
+                    <th style="width: 20%">Descripción</th>
+                    <th style="width: 20%;text-align: center">Categoría</th>
+                    <th style="width: 20%;text-align: center">Estado</th>
+                    <th style="width: 20%;text-align: center">Archivo</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for incidencia in ultimas_incidencias %}
+                    <tr>
+                        <td>
+                            <h7>{{ incidencia.responsable }}</h7>
+                        </td>
+                        <td>
+                            {{ incidencia.titulo }}
+                        </td>
+                        <td>{{ incidencia.descripcion }}</td>
+                        <td style="text-align: center">{{ incidencia.get_categoria_display }}</td>
+                        <td style="text-align: center">{{ incidencia.get_estado_display }}</td>
+                        <td style="text-align: center">{% if incidencia.archivo %}<a href="/media/{{ incidencia.archivo }}" target="_blank"><i class="fa fa-file"></i></a>{% else %}---{% endif %}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="container" style="text-align: center; height: 70%; padding-top: 150px">
+            <div class="row">
+                <div class="twelve columns">
+                    <h1>Información no disponible</h1>
+                </div>
+            </div>
+        </div>
     {% endif %}
-  </div>
-
-  <section class="container">
-    <div class="row">
-      <div class="three columns">
-        <div class="card">
-          <div class="card-content">
-            <h3 id="countPersonas">-----</h3>
-            <p>Personas</p>
-          </div>
-          <div class="card-footer">
-            <a href="{% url 'administrativo:listar_personas' %}">Ver información</a>
-          </div>
-        </div>
-      </div>
-      <div class="three columns">
-        <div class="card">
-          <div class="card-content">
-            <h3 id="countEmpleados">-----</h3>
-            <p>Módulos</p>
-          </div>
-          <div class="card-footer">
-            <a href="{% url 'administrativo:listar_personas' %}">Ver información</a>
-          </div>
-        </div>
-      </div>
-      <div class="three columns">
-        <div class="card">
-          <div class="card-content">
-            <h3 id="countAdmin">-----</h3>
-            <p>Administrativo</p>
-          </div>
-          <div class="card-footer">
-            <a href="{% url 'administrativo:listar_personas' %}">Ver información</a>
-          </div>
-        </div>
-      </div>
-      <div class="three columns">
-        <div class="card">
-          <div class="card-content">
-            <h3 id="countMarcadas">-----</h3>
-            <p>Incidencias</p>
-          </div>
-          <div class="card-footer">
-            <a href="{% url 'administrativo:listar_personas' %}">Ver información</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <div class="container">
-    <h4>Últimas 5 incidencias registradas</h4>
-    <table class="u-full-width">
-      <thead>
-        <tr>
-          <th>Nombres y apellidos</th>
-          <th>Fecha</th>
-          <th>Ubicación</th>
-          <th>Motivo</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for marcacion in ultimas_marcaciones %}
-          <tr>
-            <td>
-              <h6>{{ marcacion.dia.empleado.persona }}</h6>
-              {% if marcacion.dia.empleado.persona.cedula %}
-                <span><b>Cédula:</b> {{ marcacion.dia.empleado.persona.cedula }}</span>
-              {% endif %}
-              {% if marcacion.dia.empleado.persona.pasaporte %}
-                <span><b>Pasaporte:</b> {{ marcacion.dia.empleado.persona.pasaporte }}</span>
-              {% endif %}
-              {% if marcacion.dia.empleado.persona.ruc %}
-                <span><b>Ruc:</b> {{ marcacion.dia.empleado.persona.ruc }}</span>
-              {% endif %}
-            </td>
-            <td>{{ marcacion.fecha_hora }}</td>
-            <td>
-              <a href="https://www.google.com/maps/search/?api=1&query={{ marcacion.ubicacion }}" target="_blank" title="Consultar ubicación de marcada">Ver ubicación</a>
-            </td>
-            <td>{{ marcacion.get_motivo_display }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-{% else %}
-  <div class="container" style="text-align: center; height: 70%; padding-top: 150px">
-    <div class="row">
-      <div class="twelve columns">
-        <h1>Información no disponible</h1>
-      </div>
-    </div>
-  </div>
-{% endif %}
 
 {% endblock %}

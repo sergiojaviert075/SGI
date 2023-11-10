@@ -1,5 +1,6 @@
 import datetime
 from datetime import datetime
+from validadores import validador
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db import transaction
@@ -7,13 +8,13 @@ from django.db.models import Q
 from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from core.utils import is_ajax
-from administrativo.forms import PlantillaPersonalForm
-from administrativo.models import PlantillaPersona, Persona, PersonaPerfil
+from administrativo.models import Persona, PersonaPerfil
 from baseapp.forms import PersonaForm
 from authenticaction.models import CustomUser
 
 
 @login_required
+@validador
 def listar_personas(request,search=None):
     try:
         parametros = ''
@@ -60,19 +61,30 @@ def crear_persona(request):
         try:
             with transaction.atomic():
                 form = PersonaForm(request.POST, request.FILES)
-                if form.is_valid():
+                filtro = Q(status = True)
+                if not request.POST['cedula'] and not request.POST['pasaporte'] and not request.POST['ruc']:
+                    return JsonResponse(
+                        {'success': False, 'message': 'Por favor, ingrese su identificación'})
+                if request.POST['cedula']:
+                    filtro = filtro & Q(cedula=request.POST['cedula'])
+                elif request.POST['pasaporte']:
+                    filtro = filtro & Q(pasaporte=request.POST['pasaporte'])
+                elif request.POST['ruc']:
+                    filtro = filtro & Q(ruc=request.POST['ruc'])
+                persona = Persona.objects.filter(filtro)
+                if not persona.exists():
                     instance = Persona(
-                        nombres=form.cleaned_data['nombres'],
-                        apellido1=form.cleaned_data['apellido1'],
-                        apellido2=form.cleaned_data['apellido2'],
-                        cedula=form.cleaned_data['cedula'],
-                        pasaporte=form.cleaned_data['pasaporte'],
-                        ruc=form.cleaned_data['ruc'],
-                        direccion=form.cleaned_data['direccion'],
-                        genero=form.cleaned_data['genero'],
-                        fecha_nacimiento=form.cleaned_data['fecha_nacimiento'],
-                        correo_electronico=form.cleaned_data['correo_electronico'],
-                        telefono=form.cleaned_data['telefono'],
+                        nombres=request.POST['nombres'],
+                        apellido1=request.POST['apellido1'],
+                        apellido2=request.POST['apellido2'],
+                        cedula=request.POST['cedula'],
+                        pasaporte=request.POST['pasaporte'],
+                        ruc=request.POST['ruc'],
+                        direccion=request.POST['direccion'],
+                        genero_id=int(request.POST['genero']),
+                        fecha_nacimiento=request.POST['fecha_nacimiento'],
+                        correo_electronico=request.POST['correo_electronico'],
+                        telefono=request.POST['telefono'],
                     )
                     instance.save(request)
                     if 'foto' in request.FILES:
@@ -89,28 +101,30 @@ def crear_persona(request):
                         identificacion = instance.ruc
                     password = identificacion.replace(' ', '')
                     password = password.lower()
-                    username = form.cleaned_data['nombres'].replace(' ','').lower()  # Eliminar espacios y líneas nuevas
+                    username = request.POST['nombres'].replace(' ','').lower()  # Eliminar espacios y líneas nuevas
                     usuario = CustomUser.objects.create_user(username, password)
                     usuario.save()
                     instance.usuario = usuario
                     instance.save(request)
                     persona_perfil = PersonaPerfil(
-                        persona=instance
+                        persona=instance,
+                        is_usuariofinal=True
                     )
                     persona_perfil.save(request)
-                    return JsonResponse({'success': True, 'message': 'Acción realizada con éxito!'})
-                else:
-                    return JsonResponse({'success': False, 'errors': form.errors})
+                    return JsonResponse({"success": True, "message": 'Acción realizada con éxito!', "url": '/administrativo/personas/'})
+                return JsonResponse({'success': False, 'message': 'La persona se encuentra registrada con la misma identificación'})
         except Exception as e:
             transaction.set_rollback(True)
             return JsonResponse({'success': False})
     else:
         form = PersonaForm()
+        form.no_requerir()
     context = {
         'form': form,
         'titulo': "Adicionar persona",
         'page_titulo': "Adicionar persona",
         'height': True,
+        'action': '/personas/add',
         'cancelar': 'administrativo:listar_personas',
     }
     return render(request, 'personas/add.html', context)
@@ -122,64 +136,56 @@ def editar_persona(request, pk):
         try:
             with transaction.atomic():
                 form = PersonaForm(request.POST, request.FILES)
-                if form.is_valid():
-                    instance.nombres = form.cleaned_data['nombres']
-                    instance.apellido1 = form.cleaned_data['apellido1']
-                    instance.apellido2 = form.cleaned_data['apellido2']
-                    if request.session['administrador_principal']:
-                        instance.cedula = form.cleaned_data['cedula']
-                        instance.pasaporte = form.cleaned_data['pasaporte']
-                        instance.ruc = form.cleaned_data['ruc']
-                    instance.direccion = form.cleaned_data['direccion']
-                    instance.genero = form.cleaned_data['genero']
-                    instance.fecha_nacimiento = form.cleaned_data['fecha_nacimiento']
-                    instance.correo_electronico = form.cleaned_data['correo_electronico']
-                    instance.telefono = form.cleaned_data['telefono']
+                instance.direccion = request.POST['direccion']
+                instance.genero_id = request.POST['genero']
+                instance.fecha_nacimiento = request.POST['fecha_nacimiento']
+                instance.correo_electronico = request.POST['correo_electronico']
+                instance.telefono = request.POST['telefono']
+                instance.save(request)
+                if 'foto' in request.FILES:
+                    archivo = request.FILES['foto']
+                    extension = archivo._name[archivo._name.rfind("."):]
+                    archivo._name = "fotoperfil_" + str(instance.id) + '_' + str(datetime.now()).replace('-', '_') + extension.lower()
+                    instance.foto = archivo
                     instance.save(request)
-                    if 'foto' in request.FILES:
-                        archivo = request.FILES['foto']
-                        extension = archivo._name[archivo._name.rfind("."):]
-                        archivo._name = "fotoperfil_" + str(instance.id) + '_' + str(datetime.now()).replace('-', '_') + extension.lower()
-                        instance.foto = archivo
-                        instance.save(request)
-                    return JsonResponse({'success': True, 'message': 'Acción realizada con éxito!'})
-                else:
-                    return JsonResponse({'success': False, 'errors': form.errors})
+                return JsonResponse({'success': True, 'message': 'Acción realizada con éxito!', "url": '/administrativo/personas/'})
         except Exception as e:
             transaction.set_rollback(True)
             return JsonResponse({'success': False})
     else:
-        if is_ajax(request):
-            form = PersonaForm(initial={
-                                        'nombres': instance.nombres,
-                                        'apellido1': instance.apellido1,
-                                        'apellido2': instance.apellido2,
-                                        'cedula': instance.cedula,
-                                        'pasaporte': instance.pasaporte,
-                                        'ruc': instance.ruc,
-                                        'direccion': instance.direccion,
-                                        'genero': instance.genero,
-                                        'fecha_nacimiento': instance.fecha_nacimiento.strftime('%Y-%m-%d'),
-                                        'correo_electronico': instance.correo_electronico,
-                                        'telefono': instance.telefono,
-                                        'foto': instance.foto,
-            })
-        else:
-            return redirect('administrativo:listar_personas')
-    form.bloquear_cedula()
+        form = PersonaForm(initial={
+            'nombres': instance.nombres,
+            'apellido1': instance.apellido1,
+            'apellido2': instance.apellido2,
+            'cedula': instance.cedula,
+            'pasaporte': instance.pasaporte,
+            'ruc': instance.ruc,
+            'direccion': instance.direccion,
+            'genero': instance.genero,
+            'fecha_nacimiento': instance.fecha_nacimiento.strftime('%Y-%m-%d'),
+            'correo_electronico': instance.correo_electronico,
+            'telefono': instance.telefono,
+            'foto': instance.foto,
+        })
+    form.no_necesarios()
     context = {
         'form': form,
+        'titulo': "Editar persona",
+        'page_titulo': "Editar persona",
+        'height': True,
+        'action': '/personas/edit/' + str(pk),
+        'cancelar': 'administrativo:listar_personas',
     }
-    return render(request, 'form_modal.html', context)
+    return render(request, 'personas/edit.html', context)
 
 @login_required
-def eliminar_persona(request, pk):
+def eliminar_persona(request):
     try:
-        instance = get_object_or_404(Persona, pk=pk)
+        instance = get_object_or_404(Persona, pk=int(request.POST['id']))
         if request.method == 'POST':
             instance.eliminar_registro(request)
             return JsonResponse({'success': True, 'message': 'Registro eliminado con éxito'})
-    except PlantillaPersona.DoesNotExist:
+    except Persona.DoesNotExist:
         return JsonResponse({'success': False, 'message': 'El registro no existe'})
 
 
@@ -200,7 +206,7 @@ def activar_desactivar_perfil(request):
                     perfil_persona.is_administrador = estado
                     perfil_persona.save(request)
                 elif tipo == 2:
-                    perfil_persona.is_empleado = estado
+                    perfil_persona.is_agente = estado
                     perfil_persona.save(request)
 
 

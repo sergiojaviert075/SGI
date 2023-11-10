@@ -47,6 +47,13 @@ class Persona(ModeloBase):
     def save(self, *args, **kwargs):
         super(Persona, self).save(*args, **kwargs)
 
+    def get_perfil(self):
+        perfil = self.personaperfil_set.filter(status=True)
+        if perfil.exists():
+            perfil = perfil.first()
+            return perfil.get_perfil()
+        return ''
+
     def get_card_id(self):
         if self.cedula:
             return self.cedula
@@ -60,6 +67,9 @@ class Persona(ModeloBase):
 
     def perfil_administrativo(self):
         return self.personaperfil_set.filter(status=True, is_administrador=True).exists()
+
+    def perfil_agente(self):
+        return self.personaperfil_set.filter(status=True, is_agente=True).exists()
 
     def perfil_usuariofinal(self):
         return self.personaperfil_set.filter(status=True, is_usuariofinal=True).exists()

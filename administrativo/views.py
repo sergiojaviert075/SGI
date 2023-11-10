@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from administrativo.models import PersonaPerfil, PlantillaPersona, Persona, DetalleRegistroEntradaSalida
+from administrativo.models import PersonaPerfil, Persona, Incidencia
+from system.models import Modulo
 from django.http import JsonResponse, HttpResponseRedirect
 
 # Create your views here.
@@ -23,20 +24,20 @@ def consultaPersonas(request):
         return JsonResponse({'success': False, 'message': 'El registro no existe'})
 
 @login_required
-def consultaEmpleados(request):
+def consultaIncidencias(request):
     try:
-        empleados = PlantillaPersona.objects.filter(status=True)
-        total = empleados.count()
+        incidencias = Incidencia.objects.filter(status=True)
+        total = incidencias.count()
         return JsonResponse({'success': True, 'total': total})
     except PersonaPerfil.DoesNotExist:
         return JsonResponse({'success': False, 'message': 'El registro no existe'})
 
 
 @login_required
-def consultaMarcadas(request):
+def consultaModulos(request):
     try:
-        marcadas = DetalleRegistroEntradaSalida.objects.filter(status=True)
-        total = marcadas.count()
+        modulos = Modulo.objects.filter(status=True, visible=True)
+        total = modulos.count()
         return JsonResponse({'success': True, 'total': total})
     except PersonaPerfil.DoesNotExist:
         return JsonResponse({'success': False, 'message': 'El registro no existe'})

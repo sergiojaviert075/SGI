@@ -2,6 +2,11 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <script src="{% static 'templategeeks/assets/libs/jquery/dist/jquery.min.js' %}"></script>
+    <script src="{% static 'sweetalert2/sweetalert2.js' %}"></script>
+    <script src="{% static 'toast/jquery.toast.min.js' %}"></script>
+    <script src="{% static 'js/core/utils/utils_alertas.js' %}"></script>
+    <script src="{% static 'js/core/utils/utils_requests.js' %}"></script>
     <link href="{% static 'css/normalize.css' %}" rel="stylesheet">
     <link href="{% static 'css/skeleton.css' %}" rel="stylesheet">
     <link href="{% static 'css/menu.css' %}" rel="stylesheet">
@@ -212,7 +217,8 @@
             <i class="fa fa-bars"></i>
         </button>
         <div class="container">
-            <div class="" style="vertical-align: center;height: 10px!important;border: 1px solid #E1E1E1; padding: 15px 25px; border-radius: 4px; box-shadow: 1px 1px 1px #E1E1E1; min-height: 100px;margin-bottom: 1rem;">
+            <div class=""
+                 style="vertical-align: center;height: 10px!important;border: 1px solid #E1E1E1; padding: 15px 25px; border-radius: 4px; box-shadow: 1px 1px 1px #E1E1E1; min-height: 100px;margin-bottom: 1rem;">
                 <h3 class="">{{ titulo }}</h3>
                 {% if subobjeto %}<h4 class="">{{ subobjeto }}</h4>{% endif %}
             </div>
@@ -244,7 +250,6 @@
 
         notificationContainer.appendChild(notification);
         notificationContainer.style.display = "block"; // Muestra el contenedor
-
         setTimeout(() => {
             notification.remove();
             if (notificationContainer.childElementCount === 0) {
@@ -258,12 +263,13 @@
         showCustomAlert(text);
     }
 
-    function mensaje_satisfaccion(text, url=null) {
+    function mensaje_satisfaccion(text, url = null) {
         showCustomAlert(text);
         if (url) {
             window.location.href = url;
+        }else{
+            location.reload();
         }
-        location.reload();
     }
 </script>
 {% block scripts_add %}

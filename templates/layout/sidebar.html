@@ -1,6 +1,8 @@
 {% load static %}
 
 <div class="admin-menu" style="min-height: 1000px;">
+
+
         <a href="/"><i class="fa fa-home"></i> Inicio</a>
 <hr>
         <div class="dropdown">
@@ -14,5 +16,8 @@
                 {% endfor %}
             </div>
         {% endfor %}
+        <br>
+        <br>
+        <a style="font-size: 12px;text-align: center">{{ user.persona.get_perfil }}</a>
     </div>
     </div>

@@ -4,6 +4,17 @@ ADMINISTRADOR_ID = 1
 TITULO_SISTEMA = 'SGI'
 # Coordenadas de la empresa
 
+CATEGORIAS = (
+    (1, 'Alta'),
+    (2, 'Media'),
+    (3, 'Baja'),
+)
+
+ESTADOS_PRINCIPALES = (
+    (1, 'Pendiente'),
+    (2, 'Aprobado'),
+    (3, 'Rechazado'),
+)
 
 # TIPO DE IDENTIFICACIONES
 IDENTIFICACIONES = (

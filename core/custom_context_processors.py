@@ -45,18 +45,23 @@ def global_context(request):
                 perfil = perfil.first()
                 if perfil.is_administrador_principal == True:
                     grupo_administrativo_principal = Group.objects.filter(name='Administrativo Principal')
-                    if grupo_administrativo_principal:
+                    if grupo_administrativo_principal.exists():
                         request.session['administrador_principal'] = True
                         request.session['tipoperfil'] = tipoperfil = grupo_administrativo_principal.first().id
                         lista_grupos.append(tipoperfil)
                 if perfil.is_administrador == True:
                     grupo_administrativo = Group.objects.filter(name='Administrativo')
-                    if grupo_administrativo:
+                    if grupo_administrativo.exists():
                         request.session['tipoperfil'] = tipoperfil = grupo_administrativo.first().id
+                        lista_grupos.append(tipoperfil)
+                if perfil.is_agente == True:
+                    grupo_agente = Group.objects.filter(name='Agente')
+                    if grupo_agente.exists():
+                        request.session['tipoperfil'] = tipoperfil = grupo_agente.first().id
                         lista_grupos.append(tipoperfil)
                 if perfil.is_usuariofinal == True:
                     grupo_usuariofinal = Group.objects.filter(name='Usuario final')
-                    if grupo_usuariofinal:
+                    if grupo_usuariofinal.exists():
                         request.session['tipoperfil'] = tipoperfil = grupo_usuariofinal.first().id
                         lista_grupos.append(tipoperfil)
                 if 'lista_grupos' in request.session:

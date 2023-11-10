@@ -3,7 +3,7 @@ from datetime import datetime, date
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from baseapp.models import Persona
-from administrativo.models import PersonaPerfil, PlantillaPersona, JornadaEmpleado, DetalleRegistroEntradaSalida
+from administrativo.models import PersonaPerfil, Incidencia
 
 
 @login_required # Este decorador asegura que solo los usuarios autenticados puedan acceder a esta vista
@@ -13,14 +13,11 @@ def home(request):
     fecha_actual = datetime.now().date()
 
     #CONSULTA CUÁLES SON LAS ÚLTIMAS 5 MARCACIONES QUE SE REALIZARON
-    ultimas_marcaciones = DetalleRegistroEntradaSalida.objects.filter(status=True, fecha_hora__date=fecha_actual).order_by('dia__empleado').distinct('dia__empleado')[:5]
+    ultimas_incidencias = Incidencia.objects.filter(status=True).order_by('-id')[:5]
 
     #CONSULTA A LOS EMPLEADOS ACTIVOS Y CUÁLES DE ELLOS NO TIENEN JORNADAS LABORALES ASIGNADAS
-    empleados = PlantillaPersona.objects.filter(status=True, activo=True)
+    empleados = []
     for empleado in empleados:
-        jornada = JornadaEmpleado.objects.filter(status=True, empleado=empleado)
-        if not jornada.exists():
-            empleados_sin_jornadas = True
             break
 
     is_administrativo = False
@@ -42,7 +39,7 @@ def home(request):
         'titulo':'Inicio',
         'is_administrativo':is_administrativo,
         'empleados_sin_jornadas':empleados_sin_jornadas,
-        'ultimas_marcaciones':ultimas_marcaciones,
+        'ultimas_incidencias':ultimas_incidencias,
     }
 
     # Renderiza el template y pasa el contexto

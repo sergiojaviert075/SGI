@@ -3,12 +3,6 @@
 {% block estilos_add %}
     <script src="{% static 'templategeeks/assets/libs/jquery/dist/jquery.min.js' %}"></script>
 
-    <script src="{% static 'sweetalert2/sweetalert2.js' %}"></script>
-    <script src="{% static 'toast/jquery.toast.min.js' %}"></script>
-    <!-- Theme JS -->
-    <script src="{% static 'js/core/utils/utils_alertas.js' %}"></script>
-    <script src="{% static 'js/core/utils/utils_requests.js' %}"></script>
-
     <style>
         .custom-dropdown {
             position: relative;
@@ -47,7 +41,7 @@
     </style>
 
     <style>
-        #custom-modal {
+        #custom-modal, #eliminar-modal {
             display: none;
             position: fixed;
             top: 50%;
@@ -61,12 +55,12 @@
             text-align: center;
         }
 
-        #custom-modal h2 {
+        #custom-modal h2, #eliminar-modal h2 {
             font-size: 24px;
             margin-bottom: 10px;
         }
 
-        #custom-modal p {
+        #custom-modal p, #eliminar-modal p {
             font-size: 16px;
         }
 
@@ -96,13 +90,13 @@
 
     <script>
 
-        function mostrar_modal() {
-            const customModal = document.getElementById("custom-modal");
+        function mostrar_modal(modal) {
+            const customModal = document.getElementById(modal);
             customModal.style.display = "block";
         }
 
-        function ocultar_moda() {
-            const customModal = document.getElementById("custom-modal");
+        function ocultar_moda(modal) {
+            const customModal = document.getElementById(modal);
             customModal.style.display = "none";
         }
 
@@ -120,6 +114,28 @@
                         mensaje_satisfaccion(data.message)
                     } else {
                         showCustomAlert(data.message);
+                    }
+                },
+                error: function () {
+                    toast_error("Error en la solicitud AJAX.");
+                }
+            });
+        }
+
+        function enviar_eliminar_persona() {
+            var id = $("#idPersona").val();
+            $.ajax({
+                url: "{% url 'administrativo:eliminar_persona' %}",
+                type: "POST",
+                data: {
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    id: id,
+                },
+                success: function (data) {
+                    if (data.success) {
+                        mensaje_satisfaccion(data.message)
+                    } else {
+                        toast_error(data.message);
                     }
                 },
                 error: function () {
@@ -154,8 +170,13 @@
         }
 
         function resetear_clave(id) {
-            mostrar_modal();
+            mostrar_modal('custom-modal');
             $("#idObjeto").val(id);
+        }
+
+        function eliminar_persona(id) {
+            mostrar_modal('eliminar-modal');
+            $("#idPersona").val(id);
         }
     </script>
 {% endblock %}
@@ -172,8 +193,20 @@
             <p>Esta acción es irreversible.</p>
             <input type="hidden" id="idObjeto" value="0">
             <div class="modal-buttons">
-                <button id="cancel-button" onclick="ocultar_moda()" class="button-secondary">Cancelar</button>
+                <button id="cancel-button" onclick="ocultar_moda('custom-modal')" class="button-secondary">Cancelar</button>
                 <button style="background: #0f6674; color: white;vertical-align: center" id="reset-button" onclick="enviar_a_resetear()" class="button-primary">Si, resetea</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="eliminar-modal" class="modal">
+        <div class="modal-content">
+            <h2>¿Estás seguro de eliminar a la persona?</h2>
+            <p>Esta acción es irreversible.</p>
+            <input type="hidden" id="idPersona" value="0">
+            <div class="modal-buttons">
+                <button id="cancel-button" onclick="ocultar_moda('eliminar-modal')" class="button-secondary">Cancelar</button>
+                <button style="background: #0f6674; color: white;vertical-align: center" id="reset-button" onclick="enviar_eliminar_persona()" class="button-primary">Si, elimina</button>
             </div>
         </div>
     </div>
@@ -195,6 +228,7 @@
                     <th style="width: 20%">Nombres y apellidos</th>
                     <th style="width: 20%">Género</th>
                     <th style="width: 20%">Fecha nacimiento</th>
+                    <th style="width: 20%">Dirección</th>
                     <th style="width: 20%">Teléfono / Email</th>
                     <th style="width: 20%"></th>
                 </tr>
@@ -219,11 +253,14 @@
                         </td>
                         <td>{{ personal.genero }}</td>
                         <td>{{ personal.fecha_nacimiento }}</td>
+                        <td>{{ personal.direccion }}</td>
                         <td>{{ personal.telefono|default:'' }} <br> {{ personal.correo_electronico|default:'' }}</td>
                         <td class="text-muted align-middle border-bottom-0">
                             <div class="custom-dropdown">
                                 <button class="custom-dropdown-toggle" onclick="toggleDropdown(event)">Acciones</button>
                                 <div class="custom-dropdown-content">
+                                    <a style="cursor: pointer" href="{% url 'administrativo:editar_persona' personal.pk %}">Editar</a>
+                                    <a style="cursor: pointer" onclick="resetear_clave({{ personal.id }})">Resetear clave</a>
                                     {% if not personal.perfil_administrativo %}
                                         <a style="cursor: pointer"
                                            onclick="activar_desactivar_perfil('{{ personal.id }}', 1, 1)">Activar perfil
@@ -233,13 +270,18 @@
                                            onclick="activar_desactivar_perfil('{{ personal.id }}', 1, 0)">Desactivar
                                             perfil administrativo</a>
                                     {% endif %}
-                                    <a style="cursor: pointer" onclick="resetear_clave({{ personal.id }})">Resetear
-                                        clave</a>
-                                    <a style="cursor: pointer"
-                                       onclick="editarRegistro('{% url 'administrativo:editar_persona' personal.pk %}', 'Editar registro')">Editar</a>
-                                    {% if persona.perfil_administrativo %}
+                                    {% if not personal.perfil_agente %}
                                         <a style="cursor: pointer"
-                                           onclick="eliminar_con_ajax('{% url 'administrativo:eliminar_persona' personal.pk %}')">Eliminar</a>
+                                           onclick="activar_desactivar_perfil('{{ personal.id }}', 2, 1)">Activar perfil
+                                            agente</a>
+                                    {% else %}
+                                        <a style="cursor: pointer"
+                                           onclick="activar_desactivar_perfil('{{ personal.id }}', 2, 0)">Desactivar
+                                            perfil agente</a>
+                                    {% endif %}
+                                    {% if request.user.persona.perfil_administrativo %}
+                                        <a style="cursor: pointer"
+                                           onclick="eliminar_persona({{ personal.id }})">Eliminar</a>
                                     {% endif %}
                                 </div>
                             </div>
