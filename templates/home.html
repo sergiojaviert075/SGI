@@ -1,0 +1,110 @@
+{% extends "app_base_panel.html" %}
+{% block content %}
+   {% if is_administrativo %}
+  <div class="container">
+    {% if empleados_sin_jornadas %}
+      <div class="notification warning">
+        <span class="icon">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+        </span>
+        <strong>Empleados existentes sin jornadas laborales asignadas</strong>
+      </div>
+    {% endif %}
+  </div>
+
+  <section class="container">
+    <div class="row">
+      <div class="three columns">
+        <div class="card">
+          <div class="card-content">
+            <h3 id="countPersonas">-----</h3>
+            <p>Personas</p>
+          </div>
+          <div class="card-footer">
+            <a href="{% url 'administrativo:listar_personas' %}">Ver información</a>
+          </div>
+        </div>
+      </div>
+      <div class="three columns">
+        <div class="card">
+          <div class="card-content">
+            <h3 id="countEmpleados">-----</h3>
+            <p>Módulos</p>
+          </div>
+          <div class="card-footer">
+            <a href="{% url 'administrativo:listar_personas' %}">Ver información</a>
+          </div>
+        </div>
+      </div>
+      <div class="three columns">
+        <div class="card">
+          <div class="card-content">
+            <h3 id="countAdmin">-----</h3>
+            <p>Administrativo</p>
+          </div>
+          <div class="card-footer">
+            <a href="{% url 'administrativo:listar_personas' %}">Ver información</a>
+          </div>
+        </div>
+      </div>
+      <div class="three columns">
+        <div class="card">
+          <div class="card-content">
+            <h3 id="countMarcadas">-----</h3>
+            <p>Incidencias</p>
+          </div>
+          <div class="card-footer">
+            <a href="{% url 'administrativo:listar_personas' %}">Ver información</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="container">
+    <h4>Últimas 5 incidencias registradas</h4>
+    <table class="u-full-width">
+      <thead>
+        <tr>
+          <th>Nombres y apellidos</th>
+          <th>Fecha</th>
+          <th>Ubicación</th>
+          <th>Motivo</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for marcacion in ultimas_marcaciones %}
+          <tr>
+            <td>
+              <h6>{{ marcacion.dia.empleado.persona }}</h6>
+              {% if marcacion.dia.empleado.persona.cedula %}
+                <span><b>Cédula:</b> {{ marcacion.dia.empleado.persona.cedula }}</span>
+              {% endif %}
+              {% if marcacion.dia.empleado.persona.pasaporte %}
+                <span><b>Pasaporte:</b> {{ marcacion.dia.empleado.persona.pasaporte }}</span>
+              {% endif %}
+              {% if marcacion.dia.empleado.persona.ruc %}
+                <span><b>Ruc:</b> {{ marcacion.dia.empleado.persona.ruc }}</span>
+              {% endif %}
+            </td>
+            <td>{{ marcacion.fecha_hora }}</td>
+            <td>
+              <a href="https://www.google.com/maps/search/?api=1&query={{ marcacion.ubicacion }}" target="_blank" title="Consultar ubicación de marcada">Ver ubicación</a>
+            </td>
+            <td>{{ marcacion.get_motivo_display }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="container" style="text-align: center; height: 70%; padding-top: 150px">
+    <div class="row">
+      <div class="twelve columns">
+        <h1>Información no disponible</h1>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+{% endblock %}

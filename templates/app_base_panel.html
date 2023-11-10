@@ -1,0 +1,272 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="{% static 'css/normalize.css' %}" rel="stylesheet">
+    <link href="{% static 'css/skeleton.css' %}" rel="stylesheet">
+    <link href="{% static 'css/menu.css' %}" rel="stylesheet">
+    <link href="{% static 'css/profile.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <title> {{ titulo_sistema }} | {{ page_titulo }} </title>
+    <!-- Agrega otros enlaces a CSS y recursos necesarios -->
+    <style>
+        /* Estilos personalizados para el panel de administración */
+        body {
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .admin-container {
+            display: flex;
+        }
+
+        /* Estilos del menú lateral */
+        .admin-menu {
+            flex: 0 0 250px; /* Fijar el ancho del menú lateral */
+            background-color: #333;
+            color: #fff;
+            padding: 20px;
+            height: 100vh; /* Altura del 100% de la ventana */
+            transition: 0.3s; /* Agrega una transición de 0.3 segundos para el desvanecimiento */
+        }
+
+        .admin-menu a {
+            color: #fff;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* Estilos de contenido */
+        .admin-content {
+            flex: 1;
+            padding-left: 5px;
+            padding-top: 5px;
+        }
+
+        /* Estilos para el menú horizontal en la parte superior */
+        .admin-navbar {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            display: flex;
+            justify-content: space-around; /* Distribuye los elementos horizontalmente */
+            align-items: center;
+        }
+
+        .admin-navbar a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+
+        /* Estilos para el menú desplegable de usuario */
+        .user-dropdown {
+            position: relative;
+        }
+
+        .user-dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #444;
+            min-width: 170px;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+            z-index: 1;
+            text-align: left;
+            padding: 5px 0;
+        }
+
+        .user-dropdown:hover .user-dropdown-content {
+            display: block;
+        }
+
+        /* Estilos para la imagen de perfil */
+        .profile-image {
+            width: 30px; /* Ajusta el tamaño según tus necesidades */
+            height: 30px; /* Ajusta el tamaño según tus necesidades */
+            border-radius: 50%; /* Para una imagen redonda */
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .profile-image:hover + .user-dropdown .user-dropdown-content {
+            display: block;
+        }
+
+        /* Estilos para los elementos de la lista desplegable */
+        .user-dropdown-content a {
+            color: #fff;
+            text-decoration: none;
+            display: block;
+            padding: 8px 10px;
+        }
+
+        .user-dropdown-content a:hover {
+            background-color: #555;
+        }
+
+        /* Estilos para ocultar el menú en pantallas pequeñas */
+        @media (max-width: 600px) {
+            .admin-menu {
+                display: none;
+            }
+
+            .admin-content {
+                padding-left: 20px; /* Asegura que el contenido no se solape con el menú oculto */
+            }
+        }
+
+        .sidebar {
+            height: 100%;
+            width: 250px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #333;
+            color: #fff;
+        }
+
+        .sidebar a {
+            padding: 15px 20px;
+            text-decoration: none;
+            color: #fff;
+            display: block;
+        }
+
+        .sidebar a:hover {
+            background-color: #555;
+        }
+
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #444;
+            min-width: 200px;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        /* Estilos para mostrar el botón de menú solo en pantallas pequeñas */
+        .menu-toggle {
+            display: none; /* Oculta el botón en pantallas grandes */
+        }
+
+        @media (max-width: 600px) {
+            .menu-toggle {
+                display: block; /* Muestra el botón en pantallas pequeñas (teléfonos) */
+                position: fixed;
+                top: 10px;
+                left: 10px;
+                background-color: #333;
+                color: #fff;
+                padding: 10px 15px;
+                border: none;
+                cursor: pointer;
+            }
+        }
+    </style>
+
+    <style>
+        .notification-container {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: #fff;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 5px;
+            max-width: 400px;
+            display: none;
+            text-align: center;
+        }
+
+        .notification {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+
+    </style>
+
+    {% block estilos_add %}
+    {% endblock %}
+</head>
+<body>
+<div class="notification-container" id="notificationContainer"></div>
+{% include 'layout/navbar.html' %}
+<div class="admin-container">
+    {% include 'layout/sidebar.html' %}
+    <div class="admin-content">
+        <button class="menu-toggle" onclick="toggleMenu()">
+            <i class="fa fa-bars"></i>
+        </button>
+        <div class="container">
+            <div class="" style="vertical-align: center;height: 10px!important;border: 1px solid #E1E1E1; padding: 15px 25px; border-radius: 4px; box-shadow: 1px 1px 1px #E1E1E1; min-height: 100px;margin-bottom: 1rem;">
+                <h3 class="">{{ titulo }}</h3>
+                {% if subobjeto %}<h4 class="">{{ subobjeto }}</h4>{% endif %}
+            </div>
+            {% block opciones %}
+            {% endblock %}
+        </div>
+        {% block content %}
+        {% endblock %}
+    </div>
+</div>
+
+<script>
+    // Función para alternar la clase "active" del menú lateral
+    function toggleMenu() {
+        var adminMenu = document.querySelector('.admin-menu');
+        if (adminMenu.style.display === 'block') {
+            adminMenu.style.display = 'none';
+        } else {
+            adminMenu.style.display = 'block';
+        }
+    }
+</script>
+<script>
+    function showCustomAlert(message) {
+        const notificationContainer = document.getElementById("notificationContainer");
+        const notification = document.createElement("div");
+        notification.className = "notification";
+        notification.textContent = message;
+
+        notificationContainer.appendChild(notification);
+        notificationContainer.style.display = "block"; // Muestra el contenedor
+
+        setTimeout(() => {
+            notification.remove();
+            if (notificationContainer.childElementCount === 0) {
+                notificationContainer.style.display = "none"; // Oculta el contenedor si no hay notificaciones
+            }
+        }, 2000);
+    }
+
+    function toast_error(text) {
+
+        showCustomAlert(text);
+    }
+
+    function mensaje_satisfaccion(text, url=null) {
+        showCustomAlert(text);
+        if (url) {
+            window.location.href = url;
+        }
+        location.reload();
+    }
+</script>
+{% block scripts_add %}
+{% endblock %}
+</body>
+</html>

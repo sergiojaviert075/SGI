@@ -1,0 +1,276 @@
+{% extends "app_base_panel.html" %}
+{% load static %}
+{% block estilos_add %}
+    <script src="{% static 'templategeeks/assets/libs/jquery/dist/jquery.min.js' %}"></script>
+
+    <script src="{% static 'sweetalert2/sweetalert2.js' %}"></script>
+    <script src="{% static 'toast/jquery.toast.min.js' %}"></script>
+    <!-- Theme JS -->
+    <script src="{% static 'js/core/utils/utils_alertas.js' %}"></script>
+    <script src="{% static 'js/core/utils/utils_requests.js' %}"></script>
+
+    <style>
+        .custom-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .custom-dropdown-toggle {
+            background-color: white;
+            color: black;
+            border: none;
+            cursor: pointer;
+
+        }
+
+        .custom-dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            min-width: 160px;
+            box-shadow: 0 4px 6px 0 rgba(0, 0, 0, 0.1);
+            z-index: 1;
+        }
+
+        .custom-dropdown-content a {
+            color: #333;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .custom-dropdown-content a:hover {
+            background-color: #f5f5f5;
+        }
+
+
+    </style>
+
+    <style>
+        #custom-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        #custom-modal h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        #custom-modal p {
+            font-size: 16px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .button-primary {
+            background: #3085d6;
+            color: #fff;
+            border: none;
+
+            cursor: pointer;
+        }
+
+        .button-secondary {
+            background: #d33;
+            color: #fff;
+            border: none;
+
+            cursor: pointer;
+        }
+
+    </style>
+
+    <script>
+
+        function mostrar_modal() {
+            const customModal = document.getElementById("custom-modal");
+            customModal.style.display = "block";
+        }
+
+        function ocultar_moda() {
+            const customModal = document.getElementById("custom-modal");
+            customModal.style.display = "none";
+        }
+
+        function enviar_a_resetear() {
+            var id = $("#idObjeto").val();
+            $.ajax({
+                url: "{% url 'administrativo:resetear_clave' %}",
+                type: "POST",
+                data: {
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    id: id,
+                },
+                success: function (data) {
+                    if (data.success) {
+                        mensaje_satisfaccion(data.message)
+                    } else {
+                        showCustomAlert(data.message);
+                    }
+                },
+                error: function () {
+                    toast_error("Error en la solicitud AJAX.");
+                }
+            });
+        }
+    </script>
+
+    <script>
+        function activar_desactivar_perfil(id, tipo, estado) {
+            $.ajax({
+                url: "{% url 'administrativo:activar_desactivar_perfil' %}",
+                type: "POST",
+                data: {
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    pk: id,
+                    tipo: tipo,
+                    estado: estado,
+                },
+                success: function (data) {
+                    if (data.success) {
+                        mensaje_satisfaccion(data.message)
+                    } else {
+                        showCustomAlert(data.message);
+                    }
+                },
+                error: function () {
+                    toast_error("Error en la solicitud AJAX.");
+                }
+            });
+        }
+
+        function resetear_clave(id) {
+            mostrar_modal();
+            $("#idObjeto").val(id);
+        }
+    </script>
+{% endblock %}
+{% block opciones %}
+    <div class="col-12 md-6 lg-4 xl-3 xxl-2 mb-3 mb-lg-0">
+    <a href="{% url 'administrativo:crear_persona' %}" class="button button-primary" style="width: 15%;background: #0f6674">Adicionar</a>
+</div>
+
+{% endblock %}
+{% block content %}
+    <div id="custom-modal" class="modal">
+        <div class="modal-content">
+            <h2>¿Estás seguro de resetear la clave?</h2>
+            <p>Esta acción es irreversible.</p>
+            <input type="hidden" id="idObjeto" value="0">
+            <div class="modal-buttons">
+                <button id="cancel-button" onclick="ocultar_moda()" class="button-secondary">Cancelar</button>
+                <button style="background: #0f6674; color: white;vertical-align: center" id="reset-button" onclick="enviar_a_resetear()" class="button-primary">Si, resetea</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <div class="card" style="vertical-align: center;height: auto;margin:0px">
+            <form id="id_filtro_form" method="GET" action="{% url 'administrativo:listar_personas' %}"
+                  style="margin-bottom: 0px">
+                <div class="input-group">
+                    <input type="search" name="search" class="u-full-width" value="{{ search|default:'' }}"
+                           placeholder="Filtro de búsqueda">
+
+                </div>
+            </form>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th style="width: 20%">Nombres y apellidos</th>
+                    <th style="width: 20%">Género</th>
+                    <th style="width: 20%">Fecha nacimiento</th>
+                    <th style="width: 20%">Teléfono / Email</th>
+                    <th style="width: 20%"></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for personal in page_object %}
+                    <tr>
+                        <td>
+                            <h7>{{ personal }}</h7>
+                            <br>
+                            {% if personal.cedula %}
+                                <small><b>Cédula:</b> {{ personal.cedula }}</small>
+                            {% endif %}
+                            {% if personal.pasaporte %}
+                                <small><b>Pasaporte:</b> {{ personal.pasaporte }}</small>
+                            {% endif %}
+                            {% if personal.ruc %}
+                                <small><b>Ruc:</b> {{ personal.ruc }}</small>
+                            {% endif %}
+                            <br>
+                            <small><b>Usuario:</b> {{ personal.usuario }}</small>
+                        </td>
+                        <td>{{ personal.genero }}</td>
+                        <td>{{ personal.fecha_nacimiento }}</td>
+                        <td>{{ personal.telefono|default:'' }} <br> {{ personal.correo_electronico|default:'' }}</td>
+                        <td class="text-muted align-middle border-bottom-0">
+                            <div class="custom-dropdown">
+                                <button class="custom-dropdown-toggle" onclick="toggleDropdown(event)">Acciones</button>
+                                <div class="custom-dropdown-content">
+                                    {% if not personal.perfil_administrativo %}
+                                        <a style="cursor: pointer"
+                                           onclick="activar_desactivar_perfil('{{ personal.id }}', 1, 1)">Activar perfil
+                                            administrativo</a>
+                                    {% else %}
+                                        <a style="cursor: pointer"
+                                           onclick="activar_desactivar_perfil('{{ personal.id }}', 1, 0)">Desactivar
+                                            perfil administrativo</a>
+                                    {% endif %}
+                                    <a style="cursor: pointer" onclick="resetear_clave({{ personal.id }})">Resetear
+                                        clave</a>
+                                    <a style="cursor: pointer"
+                                       onclick="editarRegistro('{% url 'administrativo:editar_persona' personal.pk %}', 'Editar registro')">Editar</a>
+                                    {% if persona.perfil_administrativo %}
+                                        <a style="cursor: pointer"
+                                           onclick="eliminar_con_ajax('{% url 'administrativo:eliminar_persona' personal.pk %}')">Eliminar</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="10" style="text-align: center">No existen registros</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% include 'paginador.html' %}
+        </div>
+
+    </div>
+{% endblock %}
+{% block scripts_add %}
+    <script>
+        function toggleDropdown(event) {
+            event.stopPropagation();
+            const dropdown = event.target.nextElementSibling;
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+
+        document.addEventListener('click', function () {
+            const dropdowns = document.querySelectorAll('.custom-dropdown-content');
+            dropdowns.forEach(function (dropdown) {
+                dropdown.style.display = 'none';
+            });
+        });
+
+    </script>
+{% endblock %}

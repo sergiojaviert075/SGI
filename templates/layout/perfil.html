@@ -1,0 +1,22 @@
+<div class="container" id="contenedorPerfil" style="margin-left:-60px;">
+    <div class="user-dropdown ms-2 u-pull-right" style="margin-top:-6px">
+      <a class="rounded-circle" href="#" role="button">
+        <div class="avatar avatar-md avatar-indicators avatar-online">
+          <img width="38" height="38" alt="avatar" src="/media/{{ user.persona.foto }}" class="rounded-circle"/>
+        </div>
+      </a>
+      <div class="dropdown-content">
+        <a class="dropdown-item" href="{% url 'administrativo:mibiografia' %}">
+          <i class="fe fe-user me-2"></i> Perfil
+        </a>
+        {% if user.is_superuser %}
+          <a class="dropdown-item" href="{% url 'admin:index'%}" target="_blank">
+            <i class="fe fe-settings me-2"></i> Administración de django
+          </a>
+        {% endif %}
+        <a class="dropdown-item" href="{% url 'accounts:logout' %}">
+          <i class="fe fe-power me-2"></i> Cerrar sesión
+        </a>
+      </div>
+    </div>
+  </div>

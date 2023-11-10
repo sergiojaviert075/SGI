@@ -1,0 +1,130 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Sistema de planificación recursos empresarial"/>
+    <meta name="keywords" content="Sistema de planificación de recursos empresarial"/>
+
+
+    <!-- Favicon icon-->
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'templategeeks/assets/images/favicon/favicon.ico' %}">
+
+    <link href="{% static 'css/normalize.css' %}" rel="stylesheet">
+    <link href="{% static 'css/skeleton.css' %}" rel="stylesheet">
+    <link href="{% static 'css/menu.css' %}" rel="stylesheet">
+    <script src="{% static 'templategeeks/assets/libs/jquery/dist/jquery.min.js' %}"></script>
+    <script src="{% static 'sweetalert2/sweetalert2.js' %}"></script>
+    <script src="{% static 'toast/jquery.toast.min.js' %}"></script>
+    <!-- Theme JS -->
+    <script src="{% static 'js/core/utils/utils_alertas.js' %}"></script>
+    <script src="{% static 'js/core/utils/utils_requests.js' %}"></script>
+
+    <title> {{ titulo_sistema }} | {{ page_titulo }} </title>
+    <style>
+        .notification-container {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: #fff;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 5px;
+            max-width: 400px;
+            display: none;
+            text-align: center;
+        }
+
+        .notification {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+
+    </style>
+    {% block head %}
+
+    {% endblock %}
+</head>
+
+<body>
+<!-- Page content -->
+<div class="notification-container" id="notificationContainer"></div>
+<div class="container d-flex flex-column">
+    {% block content %}
+
+    {% endblock %}
+</div>
+
+<script>
+    function showCustomAlert(message) {
+        const notificationContainer = document.getElementById("notificationContainer");
+        const notification = document.createElement("div");
+        notification.className = "notification";
+        notification.textContent = message;
+
+        notificationContainer.appendChild(notification);
+        notificationContainer.style.display = "block"; // Muestra el contenedor
+
+        setTimeout(() => {
+            notification.remove();
+            if (notificationContainer.childElementCount === 0) {
+                notificationContainer.style.display = "none"; // Oculta el contenedor si no hay notificaciones
+            }
+        }, 3000);
+    }
+
+    function toast_error(text) {
+
+        showCustomAlert(text);
+    }
+
+    function mensaje_satisfaccion(text, url) {
+
+        showCustomAlert(text);
+
+        window.location.href = url;
+    }
+
+    {% if form.errors %}
+        {% if messages %}
+            {% for message in messages %}
+                toast_error('{{ message }}')
+            {% endfor %}
+        {% endif %}
+
+    {% endif %}
+</script>
+<script>
+    $(document).ready(function () {
+        $(".save-modal-form-generic").submit(async function (e) {
+            e.preventDefault();  // Evita el envío del formulario por defecto
+            // Encuentra el modal padre del formulario actual
+            const $modal = $(this).closest('.modal');
+            // Realiza la solicitud AJAX y maneja la Promesa
+            const url = $(this).attr("action");
+            const formData = new FormData(this);
+            try {
+                const response = await SendPostRequest(url, formData, true);
+                if (response.success) {
+                    mensaje_satisfaccion(response.message, response.url);
+                } else {
+                    toast_error(response.errors);
+                }
+            } catch (error) {
+                toast_error("Error en la solicitud AJAX.");
+            }
+        });
+    });
+</script>
+{% block javascript %}
+
+{% endblock %}
+</body>
+
+</html>

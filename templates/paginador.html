@@ -1,0 +1,60 @@
+<style>
+    .horizontal-pagination {
+    display: flex;
+    list-style: none;
+    padding: 0;
+}
+
+.horizontal-pagination li {
+    margin: 0;
+}
+
+.horizontal-pagination li a {
+    padding: 10px 15px;
+    text-decoration: none;
+    color: black; /* Color de enlace principal */
+}
+
+.horizontal-pagination li.active a {
+    background: #0f6674;
+    color: #fff;
+}
+
+.showing-count {
+    text-align: center;
+    margin-top: 10px;
+}
+
+</style>
+
+<div class="row">
+    <p class="showing-count">Mostrando {{ page_object.start_index }} - {{ page_object.end_index }} de {{ page_object.paginator.count }}</p>
+</div>
+<div class="row">
+    <div class="twelve columns">
+        <ul class="horizontal-pagination">
+            {% if page_object.has_previous %}
+                <li>
+                    <a href="?{{ parametros }}&page={{ page_object.previous_page_number }}">&laquo;</a>
+                </li>
+            {% endif %}
+            {% for i in page_object.paginator.page_range %}
+                {% if i == page_object.number %}
+                    <li class="active">
+                        <a href="Javascript:void(0);">{{ i }}</a>
+                    </li>
+                {% else %}
+                    <li>
+                        <a href="?{{ parametros }}&page={{ i }}">{{ i }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            {% if page_object.has_next %}
+                <li>
+                    <a href="?{{ parametros }}&page={{ page_object.next_page_number }}">&raquo;</a>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+

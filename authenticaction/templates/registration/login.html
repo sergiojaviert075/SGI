@@ -1,0 +1,83 @@
+{% extends "base_generic.html" %}
+{% load static %}
+{% block head %}
+{% endblock %}
+
+{% block content %}
+    <!--<header>
+            <div class="container">
+                <div class="row">
+                <nav class="navbar">
+                    <a href="#" class="xs-twelve sm-five md-four lg-three columns menu-button menu-button-link"><h2 class="title"><strong>img chest</strong></h2></a>
+                    <a href="#" class="button xs-eleven xs-offset-by-four sm-three md-two md-offset-by-three lg-two lg-offset-by-four one-quarter columns menu-button">Login</a>
+                    <a href="#" class="button xs-eleven sm-three md-two lg-two one-quarter columns menu-button">Register</a>
+                </nav>
+                </div>
+
+             <hr class="menu-divider">
+            </div>
+        </header>-->
+        <!--SIDEBAR nav start-->
+        <div id="mySidenav" class="sidenav">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+            <a href="/accounts/login/">Iniciar sesión</a>
+            <a href="#">Regístrate</a>
+        </div>
+        <div class="navbar-container">
+            <div class="container">
+                <div class="row">
+                    <nav class="navbar">
+                        <a href="#" class="xs-nine sm-five md-four lg-three columns menu-button menu-button-link u-pull-left"><h3 class="title"><strong>SGI</strong></h3></a>
+                        <a href="/accounts/login/" class="button xs-eleven xs-offset-by-four sm-three md-two md-offset-by-three lg-two lg-offset-by-four one-quarter columns menu-button top-menu-hidden">Iniciar Sesión</a>
+                        <a href="/accounts/register/" class="button xs-eleven sm-three md-two lg-two one-quarter columns menu-button top-menu-hidden">Regístrate</a>
+                        <span class="u-pull-right xs-two side-menu-hidden" style="font-size:30px;cursor:pointer; margin-right: 20px;" onclick="openNav()">&#9776;</span>
+                    </nav>
+                </div>
+            </div>
+            <div class="nav-seperator u-full-width"></div>
+        </div>  <!--SIDEBAR nav end here-->
+
+        <!--CONTENT START-->
+        <div class="content">
+            <div class="container" style="margin-top:25px">
+                <div class="row">
+                    <div class="xs-twelve sm-twelve md-eight md-offset-by-two lg-eight lg-offset-by-two columns">
+                        <h4 class=""><strong>Bienvenido</strong></h4>
+                    </div>
+                    <hr class="u-full-width">
+                </div>
+            </div>
+            <div class="container">
+                <div class="sm-twelve md-ten md-offset-by-two lg-eight lg-offset-by-two columns">
+                    <div class="row">
+                        <form method="post" action="{% url 'accounts:login' %}">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="eight sm-offset-by-two md-six md-offset-by-two lg-offset-by-three columns">
+                                    <label for="usernameInput">Usuario</label>
+                                    <input class="u-full-width" type="text" placeholder="usuario" name="username">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="eight sm-offset-by-two md-six md-offset-by-two lg-offset-by-three columns">
+                                    <label for="passwordInput">Contraseña</label>
+                                    <input class="u-full-width" type="password" placeholder="contraseña" name="password">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="twelve sm-offset-by-two md-offset-by-two lg-offset-by-three columns">
+                                    <br>
+                                    <button class="button-primary">Iniciar sesión</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <hr class="u-full-width">
+            </div>
+        </div> <!--CONTENT ENDS HERE-->
+{% endblock %}
+
+{% block javascript %}
+<script src="{% static 'js/side_menu.js' %}"></script>
+{% endblock %}

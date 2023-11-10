@@ -1,0 +1,290 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Sistema de planificación recursos empresarial"/>
+    <meta name="keywords" content="Sistema de planificación de recursos empresarial"/>
+
+
+    <!-- Favicon icon-->
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'templategeeks/assets/images/favicon/favicon.ico' %}">
+    <link href="{% static 'sweetalert2/sweetalert2.css' %}" rel="stylesheet">
+    <link href="{% static 'toast/jquery.toast.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/normalize.css' %}" rel="stylesheet">
+    <link href="{% static 'css/skeleton.css' %}" rel="stylesheet">
+    <link href="{% static 'css/menu.css' %}" rel="stylesheet">
+    <style>
+        /* Estilos personalizados para el panel de administración */
+        body {
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+
+        .admin-container {
+            display: flex;
+        }
+
+        /* Estilos del menú lateral */
+        .admin-menu {
+            flex: 0 0 250px; /* Fijar el ancho del menú lateral */
+            background-color: #333;
+            color: #fff;
+            padding: 20px;
+            height: 100vh; /* Altura del 100% de la ventana */
+        }
+
+        .admin-menu a {
+            color: #fff;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* Estilos de contenido */
+        .admin-content {
+            flex: 1;
+            padding: 20px;
+        }
+    </style>
+
+    <title> {{ titulo_sistema }} | {{ page_titulo }} </title>
+    {% block head %}
+
+    {% endblock %}
+</head>
+
+<body>
+<!-- Page content -->
+
+<!-- Wrapper -->
+<div id="db-wrapper">
+    <!-- navbar vertical -->
+    <!-- Sidebar -->
+    {% include 'layout/sidebar.html' %}
+    <!-- Page Content -->
+    <div id="page-content">
+        {% include 'layout/navbar.html' %}
+        <!-- Page Header -->
+        <!-- Container fluid -->
+        <div class="container-fluid p-4">
+            <div class="row">
+                {% include 'layout/page_header.html' %}
+                <!-- content -->
+                <div>
+                    <div class="row mb-4 align-items-center">
+                        {% block opciones %}
+
+                        {% endblock %}
+                    </div>
+                </div>
+            </div>
+            {% block content %}
+
+            {% endblock %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal formulario simple titulo blanco-->
+<div class="modal fade" id="formulario_modal" tabindex="-1" role="dialog" aria-labelledby="formulario_modal"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <form id="id_formulario_generico" class="save-modal-form-generic" autocomplete="off" method="POST"
+              enctype="multipart/form-data">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title mb-0" id="modal-title">General</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer justify">
+                    <button type="button" class="btn btn-outline-white" data-bs-dismiss="modal"> Cerrar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<!-- Modal formulario pantalla completa -->
+<div class="modal fade" id="formulario_modal_pantalla_completa" data-bs-backdrop="static" data-bs-keyboard="false"
+     tabindex="-1"
+     aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <form class="form-horizontal form-modal save-modal-form-generic" id="id_formulario_generico_full_screen"
+          autocomplete="off" method="POST"
+          enctype="multipart/form-data">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal-title">General</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                    <button type="button" class="btn btn-outline-white" data-bs-dismiss="modal"> Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+</div>
+
+
+<!-- Modal detalle-->
+<div class="modal fade" id="modal_detalle" tabindex="-1" role="dialog" aria-labelledby="modal_detalle"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header ">
+                <h4 class="modal-title mb-0" id="modal-title">General</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-outline-white" data-bs-dismiss="modal"> Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{% block modal_extra %}
+
+{% endblock %}
+<script src="{% static 'sweetalert2/sweetalert2.js' %}"></script>
+<script src="{% static 'toast/jquery.toast.min.js' %}"></script>
+<!-- Theme JS -->
+<script src="{% static 'js/core/utils/utils_alertas.js' %}"></script>
+<script src="{% static 'js/core/utils/utils_requests.js' %}"></script>
+
+<script>
+    function SeeErrorsForm(errors) {
+        // Función para mostrar los errores del formulario en el modal
+        for (var fieldName in errors) {
+            if (errors.hasOwnProperty(fieldName)) {
+                var errorMessage = errors[fieldName];
+                var $field = $("[name='" + fieldName + "']");
+                if ($field.length > 0) {
+                    $field.addClass('is-invalid'); // Agrega la clase 'is-invalid' al campo
+                    $field.after('<span class="text-danger">' + errorMessage + '</span>');
+                    // Desplaza la página para mostrar el campo con errores
+                    $field[0].scrollIntoView({behavior: 'smooth', block: 'center'});
+                }
+            }
+        }
+    }
+
+    const modal_detalle = (url, title) => {
+        // Verificar si el usuario está autenticado
+        {% if user.is_authenticated %}
+            // El usuario está autenticado, cargar el formulario modal
+            $.ajax({
+                url: url,  // URL de la vista de Django
+                type: "GET",
+                success: function (data) {
+                    $("#modal_detalle #modal-title").html(title.toUpperCase());
+                    $("#modal_detalle").attr('action', url);
+                    $("#modal_detalle .modal-body").html(data);
+                    $("#modal_detalle").modal({backdrop: 'static'}).modal("show");
+                },
+                error: function () {
+                    toast_error("Error al cargar el formulario.");
+                }
+            });
+        {% else %}
+            // El usuario no está autenticado, redirigir a la página de inicio de sesión
+            window.location.href = '{% url 'accounts:login' %}';  // Asegúrate de que esta sea la URL correcta
+        {% endif %}
+    }
+    const formulario_modal = (url, title) => {
+        // Verificar si el usuario está autenticado
+        {% if user.is_authenticated %}
+            // El usuario está autenticado, cargar el formulario modal
+            $.ajax({
+                url: url,  // URL de la vista de Django
+                type: "GET",
+                success: function (data) {
+                    $("#formulario_modal #modal-title").html(title.toUpperCase());
+                    $("#id_formulario_generico").attr('action', url);
+                    $("#formulario_modal .modal-body").html(data);
+                    $("#formulario_modal").modal({backdrop: 'static'}).modal("show");
+                },
+                error: function () {
+                    toast_error("Error al cargar el formulario.");
+                }
+            });
+        {% else %}
+            // El usuario no está autenticado, redirigir a la página de inicio de sesión
+            window.location.href = '{% url 'accounts:login' %}';  // Asegúrate de que esta sea la URL correcta
+        {% endif %}
+    }
+    const formulario_modal_pantalla_completa = (url, title) => {
+        {% if user.is_authenticated %}
+            $.ajax({
+                url: url,  // URL de la vista de Django
+                type: "GET",
+                success: function (data) {
+                    $("#formulario_modal_pantalla_completa #modal-title").html(title.toUpperCase());
+                    $("#id_formulario_generico_full_screen").attr('action', url);
+                    $("#formulario_modal_pantalla_completa .modal-body").html(data);
+                    $("#formulario_modal_pantalla_completa").modal({backdrop: 'static'}).modal("show");
+                },
+                error: function () {
+                    toast_error("Error al cargar el formulario.");
+                }
+            });
+        {% else %}
+            // El usuario no está autenticado, redirigir a la página de inicio de sesión
+            window.location.href = '{% url 'accounts:login' %}';  // Asegúrate de que esta sea la URL correcta
+        {% endif %}
+    }
+</script>
+<script>
+    $(document).ready(function () {
+        $(".save-modal-form-generic").submit(async function (e) {
+            e.preventDefault();  // Evita el envío del formulario por defecto
+            // Encuentra el modal padre del formulario actual
+            const $modal = $(this).closest('.modal');
+            // Realiza la solicitud AJAX y maneja la Promesa
+            const url = $(this).attr("action");
+            const formData = new FormData(this);
+            try {
+                const response = await SendPostRequest(url, formData, true);
+                if (response.success) {
+                    message_success_reload(response.message);
+                } else {
+                    toast_error(response.errors);
+                }
+            } catch (error) {
+                toast_error("Error en la solicitud AJAX.");
+            }
+        });
+    });
+</script>
+{% block javascript %}
+
+{% endblock %}
+<script>
+    {% if form.errors %}
+        {% if messages %}
+            {% for message in messages %}
+                toast_error('{{ message }}')
+            {% endfor %}
+        {% endif %}
+    {% endif %}
+</script>
+</body>
+
+</html>

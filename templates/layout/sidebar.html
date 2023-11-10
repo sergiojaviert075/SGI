@@ -1,0 +1,18 @@
+{% load static %}
+
+<div class="admin-menu" style="min-height: 1000px;">
+        <a href="/"><i class="fa fa-home"></i> Inicio</a>
+<hr>
+        <div class="dropdown">
+        {% for categoria in categorias %}
+            <a style="">{{ categoria.nombre }}</a>
+            <div class="" style="margin-left: 10px;background: #0f6674;padding-left: 5px;padding-bottom: 0.1px;padding-top: 4px;border-radius: 5px">
+                {% for foo in categoria.modulos %}
+                    {% if foo.id in modulos %}
+                        <a href="{{ foo.url_name }}"><i class="{{ foo.icono }}"></i> {{ foo.nombre }}</a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+    </div>

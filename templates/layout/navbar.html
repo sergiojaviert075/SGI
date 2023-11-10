@@ -1,0 +1,19 @@
+<div class="admin-navbar" style="background: #0f6674;border-bottom-style: solid;border-bottom-width: 0px;">
+    <a class="u-pull-left" href="#" style="margin-left:-60px;color:white"><h7>Sistema de Gestión de Incidencias</h7></a>
+    <a> </a>
+    <a> </a>
+    <a> </a>
+    <a> </a>
+    <a> </a>
+    <div class="user-dropdown">
+        <img src="/media/{{ user.persona.foto }}" alt="Imagen de Perfil" class="profile-image">
+        <div class="user-dropdown-content">
+            <a href="#">{{ user.username }}</a>
+            {% if user.is_superuser %}
+                <a href="{% url 'admin:index'%}" target="_blank">Administración Django</a>
+            {% endif %}
+            <a href="{% url 'accounts:logout' %}">Cerrar sesión</a>
+        </div>
+    </div>
+</div>
+
