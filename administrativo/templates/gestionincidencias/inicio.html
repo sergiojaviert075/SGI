@@ -1,0 +1,210 @@
+{% extends "app_base_panel.html" %}
+{% load static %}
+{% block estilos_add %}
+    <script src="{% static 'templategeeks/assets/libs/jquery/dist/jquery.min.js' %}"></script>
+
+    <style>
+        .custom-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .custom-dropdown-toggle {
+            background-color: white;
+            color: black;
+            border: none;
+            cursor: pointer;
+
+        }
+
+        .custom-dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            min-width: 160px;
+            box-shadow: 0 4px 6px 0 rgba(0, 0, 0, 0.1);
+            z-index: 1;
+        }
+
+        .custom-dropdown-content a {
+            color: #333;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .custom-dropdown-content a:hover {
+            background-color: #f5f5f5;
+        }
+
+
+    </style>
+
+    <style>
+        #custom-modal, #eliminar-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        #custom-modal h2, #eliminar-modal h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        #custom-modal p, #eliminar-modal p {
+            font-size: 16px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .button-primary {
+            background: #3085d6;
+            color: #fff;
+            border: none;
+
+            cursor: pointer;
+        }
+
+        .button-secondary {
+            background: #d33;
+            color: #fff;
+            border: none;
+
+            cursor: pointer;
+        }
+
+    </style>
+
+    <script>
+
+        function mostrar_modal(modal) {
+            const customModal = document.getElementById(modal);
+            customModal.style.display = "block";
+        }
+
+        function ocultar_moda(modal) {
+            const customModal = document.getElementById(modal);
+            customModal.style.display = "none";
+        }
+
+        function enviar_eliminar_incidencia() {
+            var id = $("#idIncidencia").val();
+            $.ajax({
+                url: "{% url 'administrativo:eliminar_miincidencia' %}",
+                type: "POST",
+                data: {
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    id: id,
+                },
+                success: function (data) {
+                    if (data.success) {
+                        mensaje_satisfaccion(data.message)
+                    } else {
+                        toast_error(data.message);
+                    }
+                },
+                error: function () {
+                    toast_error("Error en la solicitud AJAX.");
+                }
+            });
+        }
+    </script>
+
+    <script>
+
+        function eliminar_incidencia(id) {
+            mostrar_modal('eliminar-modal');
+            $("#idIncidencia").val(id);
+        }
+    </script>
+{% endblock %}
+{% block opciones %}
+{% endblock %}
+{% block content %}
+
+    <div class="container">
+
+        <div class="card" style="vertical-align: center;height: auto;margin:0px">
+            <form id="id_filtro_form" method="GET" action="{% url 'administrativo:listar_incidencias' %}"
+                  style="margin-bottom: 0px">
+                <div class="input-group">
+                    <input type="search" name="search" class="u-full-width" value="{{ search|default:'' }}"
+                           placeholder="Filtro de búsqueda">
+
+                </div>
+            </form>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th style="width: 20%">Persona</th>
+                    <th style="width: 20%">Título</th>
+                    <th style="width: 20%">Descripción</th>
+                    <th style="width: 20%;text-align: center">Categoría</th>
+                    <th style="width: 20%;text-align: center">Estado</th>
+                    <th style="width: 20%;text-align: center">Archivo</th>
+                    <th style="width: 20%;text-align: center"></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for incidencia in page_object %}
+                    <tr>
+                        <td>
+                            <h7>{{ incidencia.responsable }}</h7>
+                        </td>
+                        <td>
+                            {{ incidencia.titulo }}
+                        </td>
+                        <td>{{ incidencia.descripcion }}</td>
+                        <td style="text-align: center">{{ incidencia.get_categoria_display }}</td>
+                        <td style="text-align: center">{{ incidencia.get_estado_display }}</td>
+                        <td style="text-align: center">{% if incidencia.archivo %}<a href="/media/{{ incidencia.archivo }}" target="_blank"><i class="fa fa-file"></i></a>{% else %}---{% endif %}</td>
+                        <td class="text-muted align-middle border-bottom-0">
+                            <div class="custom-dropdown">
+                                <button class="custom-dropdown-toggle" onclick="toggleDropdown(event)">Acciones</button>
+                                <div class="custom-dropdown-content">
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="10" style="text-align: center">No existen registros</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% include 'paginador.html' %}
+        </div>
+
+    </div>
+{% endblock %}
+{% block scripts_add %}
+    <script>
+        function toggleDropdown(event) {
+            event.stopPropagation();
+            const dropdown = event.target.nextElementSibling;
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+
+        document.addEventListener('click', function () {
+            const dropdowns = document.querySelectorAll('.custom-dropdown-content');
+            dropdowns.forEach(function (dropdown) {
+                dropdown.style.display = 'none';
+            });
+        });
+
+    </script>
+{% endblock %}
