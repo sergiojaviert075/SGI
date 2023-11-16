@@ -12,6 +12,32 @@ from django.contrib.auth import login, logout, authenticate
 from baseapp.models import Persona
 from administrativo.models import PersonaPerfil, Genero
 
+def calcular_usuario(persona, variant=1):
+    def clean_and_normalize(text):
+        # Esta función limpia y normaliza el texto eliminando espacios y caracteres especiales
+        return ''.join(c.lower() for c in text if c.isalnum())
+
+    # Obtener los nombres y apellidos de la persona
+    nombres = persona.nombres.lower().split()
+    apellido1 = persona.apellido1.lower()
+    apellido2 = persona.apellido2.lower() if persona.apellido2 else ''
+
+    # Generar el nombre de usuario
+    username = clean_and_normalize(f"{nombres[0][0]}{apellido1}{apellido2[0]}")
+
+    # Verificar si el nombre de usuario ya existe en la base de datos
+    if not CustomUser.objects.filter(username=username).exclude(persona=persona).exists():
+        return username
+    else:
+        # Si ya existe, agregar un número incremental hasta encontrar un nombre de usuario único
+        variant = 1
+        while True:
+            variant_username = f"{username}{variant}"
+            if not CustomUser.objects.filter(username=variant_username).exclude(persona=persona).exists():
+                return variant_username
+            variant += 1
+
+
 
 def register(request):
     if request.method == 'POST':
@@ -48,7 +74,7 @@ def register(request):
                 instance.foto = archivo
                 instance.save(request)
             password = password.replace(' ', '')
-            username = request.POST['nombres'].replace(' ', '').lower()  # Eliminar espacios y líneas nuevas
+            username = calcular_usuario(instance)
             usuario = CustomUser.objects.create_user(username, password)
             usuario.save()
             instance.usuario = usuario
