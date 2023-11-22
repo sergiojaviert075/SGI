@@ -131,8 +131,6 @@
         }
     </script>
 {% endblock %}
-{% block opciones %}
-{% endblock %}
 {% block content %}
 
     <div class="container">
@@ -143,7 +141,7 @@
                 <div class="input-group">
                     <select id="id_categoria" name="id_categoria" class="" style="width: 30%">
                         <option value="0" selected>Todos</option>
-                        {% for categoria in categorias %}
+                        {% for categoria in categorias_ %}
                             <option value="{{ categoria.0 }}" {% if id_categoria == categoria.0 %}selected{% endif %}>{{ categoria.1 }}</option>
                         {% endfor %}
                     </select>

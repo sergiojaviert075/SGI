@@ -13,7 +13,7 @@ from core.core import CATEGORIAS
 
 @login_required
 @validador
-def listar_incidencias(request,search=None, id_categoria=None):
+def listar_incidencias(request,search=None, id_categoria=0):
     try:
         parametros = ''
         incidencias = Incidencia.objects.filter(status=True)
@@ -59,7 +59,7 @@ def listar_incidencias(request,search=None, id_categoria=None):
             'search': search,
             'id_categoria': int(id_categoria),
             'parametros': parametros,
-            'categorias': CATEGORIAS,
+            'categorias_': CATEGORIAS,
         }
         return render(request, 'gestionincidencias/inicio.html', context)
     except Exception as e:
