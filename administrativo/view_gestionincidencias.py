@@ -8,13 +8,12 @@ from django.db.models import Q
 from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from administrativo.models import Persona, PersonaPerfil, Incidencia
-from administrativo.forms import IncidenciaForm
-from authenticaction.models import CustomUser
+from core.core import CATEGORIAS
 
 
 @login_required
 @validador
-def listar_incidencias(request,search=None):
+def listar_incidencias(request,search=None, id_categoria=None):
     try:
         parametros = ''
         incidencias = Incidencia.objects.filter(status=True)
@@ -38,8 +37,13 @@ def listar_incidencias(request,search=None):
                                                  (Q(responsable__apellido1__icontains=ss[0]) & Q(responsable__apellido2__icontains=ss[1])) |
                                                  (Q(responsable__nombres__icontains=ss[0]) & Q(responsable__nombres__icontains=ss[1]))
                                                  )
+        if 'id_categoria' in request.GET:
+            id_categoria = request.GET['id_categoria']
+            if int(id_categoria) > 0:
+                parametros += '&id_categoria=' + str(id_categoria)
+                incidencias = incidencias.filter(categoria=int(id_categoria))
 
-        paginator = Paginator(incidencias, 25)
+        paginator = Paginator(incidencias.order_by("categoria"), 25)
         page = request.GET.get('page')
         try:
             page_object = paginator.page(page)
@@ -53,7 +57,9 @@ def listar_incidencias(request,search=None):
             'page_titulo': "Incidencias registradas",
             'titulo': "Incidencias registradas",
             'search': search,
+            'id_categoria': int(id_categoria),
             'parametros': parametros,
+            'categorias': CATEGORIAS,
         }
         return render(request, 'gestionincidencias/inicio.html', context)
     except Exception as e:

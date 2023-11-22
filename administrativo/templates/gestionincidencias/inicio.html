@@ -141,8 +141,14 @@
             <form id="id_filtro_form" method="GET" action="{% url 'administrativo:listar_incidencias' %}"
                   style="margin-bottom: 0px">
                 <div class="input-group">
-                    <input type="search" name="search" class="u-full-width" value="{{ search|default:'' }}"
-                           placeholder="Filtro de búsqueda">
+                    <select id="id_categoria" name="id_categoria" class="" style="width: 30%">
+                        <option value="0" selected>Todos</option>
+                        {% for categoria in categorias %}
+                            <option value="{{ categoria.0 }}" {% if id_categoria == categoria.0 %}selected{% endif %}>{{ categoria.1 }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="search" name="search" class="" value="{{ search|default:'' }}"
+                           placeholder="Título, descripción, nombres, apellidos o identificación" style="width: 40%">
 
                 </div>
             </form>
